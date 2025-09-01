@@ -1,8 +1,22 @@
+import { db } from '../db';
+import { gameSessionsTable } from '../db/schema';
 import { type GameSession } from '../schema';
+import { eq, desc } from 'drizzle-orm';
 
 export async function getGameSessions(campaignId: number): Promise<GameSession[]> {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is fetching all game sessions for a specific campaign
-    // to display campaign history and progress.
-    return Promise.resolve([]);
+  try {
+    const results = await db.select()
+      .from(gameSessionsTable)
+      .where(eq(gameSessionsTable.campaign_id, campaignId))
+      .orderBy(desc(gameSessionsTable.session_number))
+      .execute();
+
+    return results.map(result => ({
+      ...result,
+      dice_rolls: result.dice_rolls as GameSession['dice_rolls']
+    }));
+  } catch (error) {
+    console.error('Get game sessions failed:', error);
+    throw error;
+  }
 }
